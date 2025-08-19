@@ -2,32 +2,35 @@ import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
 
-# 1. Prepare training data (numbers 0 to 999)
-X = np.array(range(1000))            # Input numbers
-y = X % 2                            # Labels: 0 for even, 1 for odd
+# Use last digit as input
+X = np.array([i % 10 for i in range(1000)])  # Last digit of number
+y = np.array([i % 2 for i in range(1000)])   # 0 = even, 1 = odd
 
-# 2. Build the model
+# Normalize input
+X = X / 10.0
+
+# Build the model
 model = keras.Sequential([
-    layers.Input(shape=(1,)),        # One input number
-    layers.Dense(10, activation='relu'),
-    layers.Dense(1, activation='sigmoid')  # Output: probability (0 to 1)
+    layers.Input(shape=(1,)),
+    layers.Dense(8, activation='relu'),
+    layers.Dense(1, activation='sigmoid')
 ])
 
-# 3. Compile the model
 model.compile(optimizer='adam',
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
-# 4. Train the model
-model.fit(X, y, epochs=10, batch_size=32)
+model.fit(X, y, epochs=20, batch_size=32)
 
-# 5. Test the model
+# Predict function
 def predict_even_odd(n):
-    pred = model.predict(np.array([[n]]))[0][0]
+    last_digit = (n % 10) / 10.0
+    pred = model.predict(np.array([[last_digit]]))[0][0]
     result = "Even" if pred < 0.5 else "Odd"
     print(f"{n} is predicted as: {result} (Confidence: {pred:.2f})")
 
-# Try with custom numbers
+# Test
+predict_even_odd(33)
 predict_even_odd(42)
 predict_even_odd(77)
-predict_even_odd(1234)
+predict_even_odd(100)
