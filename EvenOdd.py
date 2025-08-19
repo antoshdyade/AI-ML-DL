@@ -2,16 +2,17 @@ import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
 
-# Use last digit as input
-X = np.array([i % 10 for i in range(1000)])  # Last digit of number
-y = np.array([i % 2 for i in range(1000)])   # 0 = even, 1 = odd
+# 1. Prepare 2D transformed data
+X = np.array([[x, x if x % 2 == 0 else -x] for x in range(1000)])
+y = np.array([x % 2 for x in range(1000)])  # 0 = even, 1 = odd
 
-# Normalize input
-X = X / 10.0
+# 2. Normalize (optional)
+X = X / 1000.0
 
-# Build the model
+# 3. Build model
 model = keras.Sequential([
-    layers.Input(shape=(1,)),
+    layers.Input(shape=(2,)),
+    layers.Dense(12, activation='relu'),
     layers.Dense(8, activation='relu'),
     layers.Dense(1, activation='sigmoid')
 ])
@@ -20,17 +21,16 @@ model.compile(optimizer='adam',
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
-model.fit(X, y, epochs=20, batch_size=32)
+# 4. Train
+model.fit(X, y, epochs=50, batch_size=32, verbose=2)
 
-# Predict function
+# 5. Prediction helper
 def predict_even_odd(n):
-    last_digit = (n % 10) / 10.0
-    pred = model.predict(np.array([[last_digit]]))[0][0]
-    result = "Even" if pred < 0.5 else "Odd"
-    print(f"{n} is predicted as: {result} (Confidence: {pred:.2f})")
+    x_input = np.array([[n, n if n % 2 == 0 else -n]]) / 1000.0
+    pred = model.predict(x_input)[0][0]
+    print(f"{n} → {'Even' if pred < 0.5 else 'Odd'} (Confidence: {pred:.2f})")
 
-# Test
+# 6. Test
 predict_even_odd(33)
 predict_even_odd(42)
 predict_even_odd(77)
-predict_even_odd(100)
